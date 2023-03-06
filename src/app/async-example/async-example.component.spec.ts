@@ -162,5 +162,5 @@ describe("AsyncExampleComponent", () => {
     expect(component.name).toBe("Alice");
     jasmine.clock().uninstall();
   })
-
+  //as
 });
