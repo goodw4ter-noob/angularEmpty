@@ -14,6 +14,13 @@ export class AsyncExampleComponent {
 
   constructor(private ds: DependencyService) { }
 
+  public setNameWithPromise(name: string): Promise<void> {
+    return new Promise((res, rej) => {
+      this.name = name;
+      res();
+    })
+  }
+
   public asyncExample(name?: string): Promise<string> {
     return new Promise((res, rej) => {
       if (!name) {

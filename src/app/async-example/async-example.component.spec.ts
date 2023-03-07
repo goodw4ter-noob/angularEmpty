@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed } from "@angular/core/testing";
+import { ComponentFixture, TestBed, fakeAsync, tick, waitForAsync } from "@angular/core/testing";
 import { of, throwError } from "rxjs";
 import { DependencyService } from "../dependency/dependency.service";
 import { AsyncExampleComponent } from "./async-example.component";
@@ -148,10 +148,10 @@ describe("AsyncExampleComponent", () => {
         expect(result).toBe("Hello Dan");
         done();
       },
-      error => {
-        expect(error).toBe('Сервис недоступен');
-        done();
-      }
+        error => {
+          expect(error).toBe('Сервис недоступен');
+          done();
+        }
       )
   });
 
@@ -161,6 +161,72 @@ describe("AsyncExampleComponent", () => {
     jasmine.clock().tick(60_000);
     expect(component.name).toBe("Alice");
     jasmine.clock().uninstall();
-  })
-  //ass
+  });
+
+  // FakeAsync
+
+  it("setNameAfterOneMinute должен присвоить указанное имя поля класса name - FakeAsync", fakeAsync(() => {
+    component.setNameAfterOneMinute("Alice");
+    tick(60_000);
+    expect(component.name).toBe("Alice");
+  }));
+
+  it("asyncExample должен вернуть указанное имя спустя секунду - FakeAsync", fakeAsync(() => {
+    component.asyncExample("Bob").then(result => {
+      expect(result).toBe("Bob");
+    })
+    tick(1000);
+  }));
+
+  it("asyncExample должен вернуть реджект, если имя не указано - FakeAsync", fakeAsync(() => {
+    component.asyncExample().then(null, err => {
+      expect(err).toBe("имя не указано");
+    })
+    tick();
+  }));
+
+  it("promiseExample должен присвоить указанное имя поля класса - fakeAsync", fakeAsync(() => {
+    component.promiseExample("Kate");
+    tick(3000);
+    expect(component.name).toBe("Kate");
+  }));
+
+  it("promiseExample должен вернуть реджект - fakeAsync", fakeAsync(() => {
+    component.promiseExample().then(null, err => {
+      expect(err).toBe("Нет имени");
+    });
+    tick(3000);
+  }));
+
+  it("observableExample должен вернуть observable с указанным именем - fakeAsync", fakeAsync(() => {
+    component.observableExample("Bob").subscribe(res => {
+      expect(res).toBe("Bob");
+    });
+    tick(1000);
+  }));
+
+  it("observableExample должен вернуть ошибку при отсутствии имени - fakeAsync", fakeAsync(() => {
+    component.observableExample().subscribe(null, err => {
+      expect(err).toBe("нет имени");
+    });
+    tick();
+  }));
+
+  // waitForAsync
+
+  it("asyncExample должен вернуть указанное имя спустя секунду - waitForAsync", waitForAsync(() => {
+    component.asyncExample("Alice").then(res => {
+      expect(res).toBe("Alice");
+    });
+  }));
+
+  it("setNameWithPromise должен обновить имя в шаблоне - waitForAsync", waitForAsync(() => {
+    component.setNameWithPromise("Ann");
+    fixture.whenStable().then(() => {
+      fixture.detectChanges();
+      const elem = fixture.nativeElement.querySelector("div");
+      expect(elem.textContent.trim()).toBe("Ann");
+    })
+  }))
+
 });
